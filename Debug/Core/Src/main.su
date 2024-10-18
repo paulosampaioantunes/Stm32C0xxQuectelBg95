@@ -1,0 +1,17 @@
+../Core/Src/main.c:80:5:main	16	static
+../Core/Src/main.c:138:6:SystemClock_Config	64	static
+../Core/Src/main.c:176:13:MX_RTC_Init	72	static
+../Core/Src/main.c:261:13:MX_USART2_UART_Init	8	static
+../Core/Src/main.c:297:13:MX_GPIO_Init	16	static
+../Core/Src/main.c:311:6:sendATCommand	16	static
+../Core/Src/main.c:314:6:receiveResponse	24	static
+../Core/Src/main.c:318:6:InitialConfigBg95	288	static
+../Core/Src/main.c:416:6:ConfigPdpContext	392	static
+../Core/Src/main.c:443:6:ConfigMqttContext	8	static
+../Core/Src/main.c:456:6:ActivePdp	8	static
+../Core/Src/main.c:464:6:MqttConnectAndSubscribe	8	static
+../Core/Src/main.c:473:6:MqttConfigBeforeConnection	8	static
+../Core/Src/main.c:485:6:EnterSleepMode	8	static
+../Core/Src/main.c:492:6:SetNextAlarm	88	static
+../Core/Src/main.c:533:6:InitFlags	8	static
+../Core/Src/main.c:552:6:Error_Handler	8	static,ignoring_inline_asm
