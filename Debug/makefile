@@ -60,8 +60,8 @@ all: main-build
 main-build: QuectelBg95Stm32C0Test.elf secondary-outputs
 
 # Tool invocations
-QuectelBg95Stm32C0Test.elf QuectelBg95Stm32C0Test.map: $(OBJS) $(USER_OBJS) C:\Users\Campotec\Documents\PecSenseUsb\PecSenseUsb\workspace\bovthermoworkspaceteste\QuectelBg95Stm32C0Test\STM32C011F6PX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "QuectelBg95Stm32C0Test.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"C:\Users\Campotec\Documents\PecSenseUsb\PecSenseUsb\workspace\bovthermoworkspaceteste\QuectelBg95Stm32C0Test\STM32C011F6PX_FLASH.ld" --specs=nosys.specs -Wl,-Map="QuectelBg95Stm32C0Test.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+QuectelBg95Stm32C0Test.elf QuectelBg95Stm32C0Test.map: $(OBJS) $(USER_OBJS) C:\Users\Campotec\Documents\STM32C0QuectelBg95\STM32C011F6PX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "QuectelBg95Stm32C0Test.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"C:\Users\Campotec\Documents\STM32C0QuectelBg95\STM32C011F6PX_FLASH.ld" --specs=nosys.specs -Wl,-Map="QuectelBg95Stm32C0Test.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

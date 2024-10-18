@@ -126,7 +126,9 @@ int main(void)
 		ConfigMqttContext();
 		MqttConfigBeforeConnection();
 		MqttConnectAndSubscribe();
-		EnterSleepMode();
+		HAL_Delay(10000);
+
+		//EnterSleepMode();
   }
   /* USER CODE END 3 */
 }
@@ -315,6 +317,7 @@ void receiveResponse(char* buffer, uint16_t bufferSize) {
     HAL_UART_Receive(&huart2, (uint8_t*)buffer, bufferSize, HAL_MAX_DELAY);
 }
 
+
 void InitialConfigBg95() {
     char response[128];   // Buffer temporário para respostas AT
     char ip[16];          // Buffer para armazenar o endereço IP
@@ -324,77 +327,77 @@ void InitialConfigBg95() {
 
     // Comando AT+CCID
     sendATCommand("AT+CCID\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+   // HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+CCID: %s\n", response);
 
     // Comando AT+CIMI
     sendATCommand("AT+CIMI\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+ //   HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+CIMI: %s\n", response);
 
     // Comando AT+CFUN=0
     sendATCommand("AT+CFUN=0\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+   // HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+CFUN=0: %s\n", response);
 
     // Comando AT+QCFG="nwscanmode",0,1
     sendATCommand("AT+QCFG=\"nwscanmode\",0,1\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+   // HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+QCFG=\"nwscanmode\": %s\n", response);
 
     // Comando AT+QCFG="nwscanseq",020103,1
     sendATCommand("AT+QCFG=\"nwscanseq\",020103,1\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+QCFG=\"nwscanseq\": %s\n", response);
 
     // Comando AT+QCFG="band",0,0
     sendATCommand("AT+QCFG=\"band\",0,0\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+QCFG=\"band\": %s\n", response);
 
     // Comando AT+COPS=0
     sendATCommand("AT+COPS=0\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+    //HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+COPS=0: %s\n", response);
 
     // Configurar o APN, username e password para a Vivo
     sendATCommand("AT+CGDCONT=1,\"IP\",\"inlog.vivo.com.br\",\"datatem\",\"datatem\"\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+   // HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+CGDCONT: %s\n", response);
 
     // Comando AT+CFUN=1
     sendATCommand("AT+CFUN=1\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+    //HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+CFUN=1: %s\n", response);
 
     // Comando AT+CREG=1;+CGREG=1;+CEREG=1
     sendATCommand("AT+CREG=1;+CGREG=1;+CEREG=1\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+   // HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+CREG=1;+CGREG=1;+CEREG=1: %s\n", response);
 
     // Comando AT+COPS?
     sendATCommand("AT+COPS?\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+COPS?: %s\n", response);
 
     // Comando AT+QCSQ
     sendATCommand("AT+QCSQ\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+QCSQ: %s\n", response);
 
     // Comando AT+CREG?;+CEREG?;+CGREG?
     sendATCommand("AT+CREG?;+CEREG?;+CGREG?\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+CREG?;+CEREG?;+CGREG?: %s\n", response);
 
     // Comando AT+CGATT=1 (Conectar à rede)
     sendATCommand("AT+CGATT=1\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+   // HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+CGATT=1: %s\n", response);
 
     // Verificar o endereço IP alocado
     sendATCommand("AT+CGPADDR\r\n");
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+CGPADDR: %s\n", response);
 
     // Extrair o endereço IP da resposta
@@ -408,7 +411,7 @@ void InitialConfigBg95() {
     snprintf(command, sizeof(command), "AT+QPING=1,\"%s\"\r\n", ip);
     sendATCommand(command);
     HAL_Delay(10);
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     printf("Resposta AT+QPING: %s\n", response);
 }
 
@@ -428,14 +431,14 @@ void ConfigPdpContext() {
     sendATCommand("AT+CGPADDR=1\r\n");
 
     // Receber a resposta e verificar se contém o IP
-    HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     if (strstr(response, "0.0.0.0") == NULL) {
         // Contexto PDP ativado com sucesso, IP foi alocado corretamente
         snprintf(command, sizeof(command), "PDP context ativado com sucesso. APN: inlog.vivo.com.br, IP: %s\r\n", response);
-        sendATCommand(command); // Transmitir a mensagem de sucesso pela UART
+       // sendATCommand(command); // Transmitir a mensagem de sucesso pela UART
     } else {
         // Erro ao ativar o contexto PDP
-        sendATCommand("Erro ao ativar o contexto PDP\r\n");
+        //sendATCommand("Erro ao ativar o contexto PDP\r\n");
     }
 }
 
@@ -450,7 +453,7 @@ void ConfigMqttContext() {
     // Configurar keepalive para 3600 segundos
     sendATCommand("AT+QMTCFG=\"keepalive\",0,3600\r\n");
     // Configurar o "Will Message" do MQTT
-    sendATCommand("AT+QMTCFG=\"will\",0,1,0,1,\"/test/will\",\"Client disconnected unexpectedly\"\r\n");
+   // sendATCommand("AT+QMTCFG=\"will\",0,1,0,1,\"/test/will\",\"Client disconnected unexpectedly\"\r\n");
 }
 
 void ActivePdp() {
@@ -463,11 +466,11 @@ void ActivePdp() {
 }
 void MqttConnectAndSubscribe() {
     // Conectar ao broker MQTT
-    sendATCommand("AT+QMTOPEN=0,\"broker.mqttdashboard.com\",1883\r\n");
+    sendATCommand("AT+QMTOPEN=0,1883\r\n");
     // Conectar ao broker MQTT com ID e credenciais
-    sendATCommand("AT+QMTCONN=0,\"clienteID\",\"usuario\",\"senha\"\r\n");
+    sendATCommand("AT+QMTCONN=0,\"1\",\"pixtest\",\"pixtest\"\r\n");
     // Inscrever-se no tópico desejado
-    sendATCommand("AT+QMTSUB=0,\"topico/assinar\",1\r\n");
+    sendATCommand("AT+QMTSUB=0,\"pixtest\",1\r\n");
 }
 
 void MqttConfigBeforeConnection() {
