@@ -32,6 +32,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define ALARM_PERIOD_IN_SECONDS 120
+#define RESPONSE_BUFFER_SIZE 256
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -55,7 +56,7 @@ static void MX_GPIO_Init(void);
 static void MX_RTC_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-void sendATCommand(char* command);
+//void sendATCommand(char* command);
 void InitialConfigBg95();
 void receiveResponse(char* buffer, uint16_t bufferSize);
 void ConfigPdpContext();
@@ -66,6 +67,10 @@ void MqttConfigBeforeConnection();
 void EnterSleepMode();
 void InitFlags();
 void SetNextAlarm();
+uint8_t responseBuffer[RESPONSE_BUFFER_SIZE];
+volatile uint8_t responseReceived = 0;
+void sendATCommand();
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -120,6 +125,23 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+
+
+	        while (!responseReceived) {
+	        	sendATCommand();
+	        	HAL_Delay(100);
+	        	HAL_UART_Receive_IT(&huart2, responseBuffer,
+	        		    	RESPONSE_BUFFER_SIZE);
+	        }
+	        break;
+	        // Após receber a resposta, processá-la
+	        HAL_UART_Transmit(&huart2, responseBuffer, strlen((char*)responseBuffer), HAL_MAX_DELAY);
+
+
+
+
+	  /*
 		InitialConfigBg95();
 		ConfigPdpContext();
 		ActivePdp();
@@ -128,7 +150,8 @@ int main(void)
 		MqttConnectAndSubscribe();
 		HAL_Delay(10000);
 
-		//EnterSleepMode();
+		EnterSleepMode();
+		*/
   }
   /* USER CODE END 3 */
 }
@@ -310,9 +333,11 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/*
 void sendATCommand(char* command) {
     HAL_UART_Transmit(&huart2, (uint8_t*)command, strlen(command), HAL_MAX_DELAY);
 }
+*/
 void receiveResponse(char* buffer, uint16_t bufferSize) {
     HAL_UART_Receive(&huart2, (uint8_t*)buffer, bufferSize, HAL_MAX_DELAY);
 }
@@ -463,7 +488,23 @@ void ConfigMqttContext() {
     // Configurar o "Will Message" do MQTT
     sendCommandAndWait("AT+QMTCFG=\"will\",0,1,0,1,\"/test/will\",\"Client disconnected unexpectedly\"\r\n");
 }
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	// Callback chamado quando a recepção completa é detectada
+	responseReceived = 1; // Marca que a resposta foi recebida
+}
 
+void sendATCommand() {
+	// Limpar o buffer de resposta
+	memset(responseBuffer, 0, sizeof(responseBuffer));
+
+
+
+	// Comando AT a ser enviado
+	uint8_t command[] = { 'A', 'T', '\r', '\n' };
+
+	// Enviar o comando AT
+	HAL_UART_Transmit(&huart2, command, sizeof(command), HAL_MAX_DELAY);
+}
 
 void ActivePdp() {
     char response[256];
