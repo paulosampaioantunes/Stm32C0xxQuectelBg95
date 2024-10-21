@@ -322,168 +322,255 @@ void InitialConfigBg95() {
     char response[128];   // Buffer temporário para respostas AT
     char ip[16];          // Buffer para armazenar o endereço IP
     char command[128];    // Buffer para os comandos AT
+    uint8_t retries;      // Contador de tentativas
 
-    // Transmitir os comandos AT pela UART2
+    // Função para enviar o comando e esperar a resposta correta
+    int sendAndWaitForResponse(char* atCommand) {
+        retries = 0;  // Reinicia o contador de tentativas
+        while (retries < 10) {
+            sendATCommand(atCommand);  // Enviar o comando AT
+            HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
+            printf("Resposta: %s\n", response);
 
-    // Comando AT+CCID
-    sendATCommand("AT+CCID\r\n");
-   // HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+CCID: %s\n", response);
-
-    // Comando AT+CIMI
-    sendATCommand("AT+CIMI\r\n");
- //   HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+CIMI: %s\n", response);
-
-    // Comando AT+CFUN=0
-    sendATCommand("AT+CFUN=0\r\n");
-   // HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+CFUN=0: %s\n", response);
-
-    // Comando AT+QCFG="nwscanmode",0,1
-    sendATCommand("AT+QCFG=\"nwscanmode\",0,1\r\n");
-   // HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+QCFG=\"nwscanmode\": %s\n", response);
-
-    // Comando AT+QCFG="nwscanseq",020103,1
-    sendATCommand("AT+QCFG=\"nwscanseq\",020103,1\r\n");
-  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+QCFG=\"nwscanseq\": %s\n", response);
-
-    // Comando AT+QCFG="band",0,0
-    sendATCommand("AT+QCFG=\"band\",0,0\r\n");
-  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+QCFG=\"band\": %s\n", response);
-
-    // Comando AT+COPS=0
-    sendATCommand("AT+COPS=0\r\n");
-    //HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+COPS=0: %s\n", response);
-
-    // Configurar o APN, username e password para a Vivo
-    sendATCommand("AT+CGDCONT=1,\"IP\",\"inlog.vivo.com.br\",\"datatem\",\"datatem\"\r\n");
-   // HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+CGDCONT: %s\n", response);
-
-    // Comando AT+CFUN=1
-    sendATCommand("AT+CFUN=1\r\n");
-    //HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+CFUN=1: %s\n", response);
-
-    // Comando AT+CREG=1;+CGREG=1;+CEREG=1
-    sendATCommand("AT+CREG=1;+CGREG=1;+CEREG=1\r\n");
-   // HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+CREG=1;+CGREG=1;+CEREG=1: %s\n", response);
-
-    // Comando AT+COPS?
-    sendATCommand("AT+COPS?\r\n");
-  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+COPS?: %s\n", response);
-
-    // Comando AT+QCSQ
-    sendATCommand("AT+QCSQ\r\n");
-  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+QCSQ: %s\n", response);
-
-    // Comando AT+CREG?;+CEREG?;+CGREG?
-    sendATCommand("AT+CREG?;+CEREG?;+CGREG?\r\n");
-  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+CREG?;+CEREG?;+CGREG?: %s\n", response);
-
-    // Comando AT+CGATT=1 (Conectar à rede)
-    sendATCommand("AT+CGATT=1\r\n");
-   // HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+CGATT=1: %s\n", response);
-
-    // Verificar o endereço IP alocado
-    sendATCommand("AT+CGPADDR\r\n");
-  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+CGPADDR: %s\n", response);
-
-    // Extrair o endereço IP da resposta
-    if (sscanf(response, "+CGPADDR: 1,\"%15[^\"]", ip) == 1) {
-        printf("Endereço IP alocado: %s\n", ip); // Exibir o IP
-    } else {
-        printf("Falha ao obter o endereço IP.\n");
+            // Verifica se a resposta contém "+" ou "OK" (case-insensitive)
+            if (strstr(response, "+") || strcasestr(response, "OK")) {
+                return 1; // Sucesso
+            }
+            retries++;  // Incrementa o contador de tentativas
+        }
+        return 0;  // Falha após 5 tentativas
     }
 
-    // Realizar um teste de ping com o IP obtido
-    snprintf(command, sizeof(command), "AT+QPING=1,\"%s\"\r\n", ip);
-    sendATCommand(command);
-    HAL_Delay(10);
-  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
-    printf("Resposta AT+QPING: %s\n", response);
+    // Envia os comandos AT e espera a resposta correta
+    if (!sendAndWaitForResponse("AT+CCID\r\n")) printf("Falha no comando AT+CCID\n");
+    if (!sendAndWaitForResponse("AT+CIMI\r\n")) printf("Falha no comando AT+CIMI\n");
+    if (!sendAndWaitForResponse("AT+CFUN=0\r\n")) printf("Falha no comando AT+CFUN=0\n");
+    if (!sendAndWaitForResponse("AT+QCFG=\"nwscanmode\",0,1\r\n")) printf("Falha no comando AT+QCFG=\"nwscanmode\"\n");
+    if (!sendAndWaitForResponse("AT+QCFG=\"nwscanseq\",020103,1\r\n")) printf("Falha no comando AT+QCFG=\"nwscanseq\"\n");
+    if (!sendAndWaitForResponse("AT+QCFG=\"band\",0,0\r\n")) printf("Falha no comando AT+QCFG=\"band\"\n");
+    if (!sendAndWaitForResponse("AT+COPS=0\r\n")) printf("Falha no comando AT+COPS=0\n");
+    if (!sendAndWaitForResponse("AT+CGDCONT=1,\"IP\",\"inlog.vivo.com.br\",\"datatem\",\"datatem\"\r\n")) printf("Falha no comando AT+CGDCONT\n");
+    if (!sendAndWaitForResponse("AT+CFUN=1\r\n")) printf("Falha no comando AT+CFUN=1\n");
+    if (!sendAndWaitForResponse("AT+CREG=1;+CGREG=1;+CEREG=1\r\n")) printf("Falha no comando AT+CREG=1;+CGREG=1;+CEREG=1\n");
+    if (!sendAndWaitForResponse("AT+COPS?\r\n")) printf("Falha no comando AT+COPS?\n");
+    if (!sendAndWaitForResponse("AT+QCSQ\r\n")) printf("Falha no comando AT+QCSQ\n");
+    if (!sendAndWaitForResponse("AT+CREG?;+CEREG?;+CGREG?\r\n")) printf("Falha no comando AT+CREG?;+CEREG?;+CGREG?\n");
+    if (!sendAndWaitForResponse("AT+CGATT=1\r\n")) printf("Falha no comando AT+CGATT=1\n");
+
+    // Verificar o endereço IP alocado
+    if (sendAndWaitForResponse("AT+CGPADDR\r\n")) {
+        // Extrair o endereço IP da resposta
+        if (sscanf(response, "+CGPADDR: 1,\"%15[^\"]", ip) == 1) {
+            printf("Endereço IP alocado: %s\n", ip); // Exibir o IP
+        } else {
+            printf("Falha ao obter o endereço IP.\n");
+        }
+
+        // Realizar um teste de ping com o IP obtido
+        snprintf(command, sizeof(command), "AT+QPING=1,\"%s\"\r\n", ip);
+        if (!sendAndWaitForResponse(command)) printf("Falha no comando AT+QPING\n");
+    } else {
+        printf("Falha no comando AT+CGPADDR\n");
+    }
 }
 
 
 void ConfigPdpContext() {
     char command[128];
     char response[256];
+    int retries = 10; // Número máximo de tentativas
+
+    // Função auxiliar para verificar a resposta
+    int checkResponse(const char *response) {
+        // Verifica se a resposta contém "+" ou "OK" (case-insensitive)
+        return (strcasestr(response, "+") != NULL || strcasestr(response, "OK") != NULL);
+    }
+
+    // Função auxiliar para enviar o comando e esperar pela resposta válida
+    void sendCommandAndWait(char *command) {
+        for (int attempt = 0; attempt < retries; attempt++) {
+            sendATCommand(command);
+            HAL_UART_Receive(&huart2, (uint8_t *)response, sizeof(response), HAL_MAX_DELAY);
+            if (checkResponse(response)) {
+                printf("Resposta recebida: %s\n", response);
+                break; // Saímos do loop se a resposta for válida
+            } else {
+                printf("Resposta inválida, reenviando comando...\n");
+            }
+        }
+    }
 
     // Configurar APN com o contexto CID 1, com login e senha
     snprintf(command, sizeof(command), "AT+CGDCONT=1,\"IP\",\"inlog.vivo.com.br\",\"\",0,0\r\n");
-    sendATCommand(command);
+    sendCommandAndWait(command);
 
     // Ativar o contexto PDP
-    sendATCommand("AT+CGACT=1,1\r\n");
+    snprintf(command, sizeof(command), "AT+CGACT=1,1\r\n");
+    sendCommandAndWait(command);
 
     // Verificar se o contexto PDP está ativo
-    sendATCommand("AT+CGPADDR=1\r\n");
+    snprintf(command, sizeof(command), "AT+CGPADDR=1\r\n");
+    sendCommandAndWait(command);
 
     // Receber a resposta e verificar se contém o IP
-  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     if (strstr(response, "0.0.0.0") == NULL) {
         // Contexto PDP ativado com sucesso, IP foi alocado corretamente
         snprintf(command, sizeof(command), "PDP context ativado com sucesso. APN: inlog.vivo.com.br, IP: %s\r\n", response);
-       // sendATCommand(command); // Transmitir a mensagem de sucesso pela UART
+        sendATCommand(command); // Transmitir a mensagem de sucesso pela UART
     } else {
         // Erro ao ativar o contexto PDP
-        //sendATCommand("Erro ao ativar o contexto PDP\r\n");
+        sendATCommand("Erro ao ativar o contexto PDP\r\n");
     }
 }
 
 
 void ConfigMqttContext() {
+    char response[256];
+    int retries = 10; // Número máximo de tentativas
+
+    // Função auxiliar para verificar a resposta
+    int checkResponse(const char *response) {
+        // Verifica se a resposta contém "+" ou "OK" (case-insensitive)
+        return (strcasestr(response, "+") != NULL || strcasestr(response, "OK") != NULL);
+    }
+
+    // Função auxiliar para enviar o comando e esperar pela resposta válida
+    void sendCommandAndWait(char *command) {
+        for (int attempt = 0; attempt < retries; attempt++) {
+            sendATCommand(command);
+            HAL_UART_Receive(&huart2, (uint8_t *)response, sizeof(response), HAL_MAX_DELAY);
+            if (checkResponse(response)) {
+                printf("Resposta recebida: %s\n", response);
+                break; // Saímos do loop se a resposta for válida
+            } else {
+                printf("Resposta inválida, reenviando comando...\n");
+            }
+        }
+    }
+
     // Configurar a versão MQTT como 3.1.1
-    sendATCommand("AT+QMTCFG=\"version\",0,4\r\n");
+    sendCommandAndWait("AT+QMTCFG=\"version\",0,4\r\n");
+
     // Associar o contexto PDP ao cliente MQTT
-    sendATCommand("AT+QMTCFG=\"pdpcid\",0,1\r\n");
+    sendCommandAndWait("AT+QMTCFG=\"pdpcid\",0,1\r\n");
+
     // Habilitar SSL para o cliente MQTT
-    sendATCommand("AT+QMTCFG=\"ssl\",0,1,0\r\n");
+    sendCommandAndWait("AT+QMTCFG=\"ssl\",0,1,0\r\n");
+
     // Configurar keepalive para 3600 segundos
-    sendATCommand("AT+QMTCFG=\"keepalive\",0,3600\r\n");
+    sendCommandAndWait("AT+QMTCFG=\"keepalive\",0,3600\r\n");
+
     // Configurar o "Will Message" do MQTT
-   // sendATCommand("AT+QMTCFG=\"will\",0,1,0,1,\"/test/will\",\"Client disconnected unexpectedly\"\r\n");
+    sendCommandAndWait("AT+QMTCFG=\"will\",0,1,0,1,\"/test/will\",\"Client disconnected unexpectedly\"\r\n");
 }
+
 
 void ActivePdp() {
+    char response[256];
+    int retries = 5; // Número máximo de tentativas
+
+    // Função auxiliar para verificar a resposta
+    int checkResponse(const char *response) {
+        // Verifica se a resposta contém "+" ou "OK" (case-insensitive)
+        return (strcasestr(response, "+") != NULL || strcasestr(response, "OK") != NULL);
+    }
+
+    // Função auxiliar para enviar o comando e esperar pela resposta válida
+    void sendCommandAndWait(char *command) {
+        for (int attempt = 0; attempt < retries; attempt++) {
+            sendATCommand(command);
+            HAL_UART_Receive(&huart2, (uint8_t *)response, sizeof(response), HAL_MAX_DELAY);
+            if (checkResponse(response)) {
+                printf("Resposta recebida: %s\n", response);
+                break; // Saímos do loop se a resposta for válida
+            } else {
+                printf("Resposta inválida, reenviando comando...\n");
+            }
+        }
+    }
+
     // Verificar se o APN está configurado corretamente
-    sendATCommand("AT+CGDCONT?\r\n");
+    sendCommandAndWait("AT+CGDCONT?\r\n");
+
     // Ativar o contexto PDP
-    sendATCommand("AT+CGACT=1,1\r\n");
+    sendCommandAndWait("AT+CGACT=1,1\r\n");
+
     // Verificar se um endereço IP foi atribuído
-    sendATCommand("AT+CGPADDR=1\r\n");
+    sendCommandAndWait("AT+CGPADDR=1\r\n");
 }
+
 void MqttConnectAndSubscribe() {
+    char response[256];
+    int retries = 5; // Número máximo de tentativas
+
+    // Função auxiliar para verificar a resposta
+    int checkResponse(const char *response) {
+        // Verifica se a resposta contém "+" ou "OK" (case-insensitive)
+        return (strcasestr(response, "+") != NULL || strcasestr(response, "OK") != NULL);
+    }
+
+    // Função auxiliar para enviar o comando e esperar pela resposta válida
+    void sendCommandAndWait(char *command) {
+        for (int attempt = 0; attempt < retries; attempt++) {
+            sendATCommand(command);
+            HAL_UART_Receive(&huart2, (uint8_t *)response, sizeof(response), HAL_MAX_DELAY);
+            if (checkResponse(response)) {
+                printf("Resposta recebida: %s\n", response);
+                break; // Saímos do loop se a resposta for válida
+            } else {
+                printf("Resposta inválida, reenviando comando...\n");
+            }
+        }
+    }
+
     // Conectar ao broker MQTT
-    sendATCommand("AT+QMTOPEN=0,1883\r\n");
+    sendCommandAndWait("AT+QMTOPEN=0,1883\r\n");
+
     // Conectar ao broker MQTT com ID e credenciais
-    sendATCommand("AT+QMTCONN=0,\"1\",\"pixtest\",\"pixtest\"\r\n");
+    sendCommandAndWait("AT+QMTCONN=0,\"1\",\"pixtest\",\"pixtest\"\r\n");
+
     // Inscrever-se no tópico desejado
-    sendATCommand("AT+QMTSUB=0,\"pixtest\",1\r\n");
+    sendCommandAndWait("AT+QMTSUB=0,\"pixtest\",1\r\n");
 }
+
 
 void MqttConfigBeforeConnection() {
+    char response[256];
+    int retries = 5; // Número máximo de tentativas
+
+    // Função auxiliar para verificar a resposta
+    int checkResponse(const char *response) {
+        // Verifica se a resposta contém "+" ou "OK" (case-insensitive)
+        return (strcasestr(response, "+") != NULL || strcasestr(response, "OK") != NULL);
+    }
+
+    // Função auxiliar para enviar o comando e esperar pela resposta válida
+    void sendCommandAndWait(char *command) {
+        for (int attempt = 0; attempt < retries; attempt++) {
+            sendATCommand(command);
+            HAL_UART_Receive(&huart2, (uint8_t *)response, sizeof(response), HAL_MAX_DELAY);
+            if (checkResponse(response)) {
+                printf("Resposta recebida: %s\n", response);
+                break; // Saímos do loop se a resposta for válida
+            } else {
+                printf("Resposta inválida, reenviando comando...\n");
+            }
+        }
+    }
 
     // Verificar se o dispositivo está registrado na rede
-    sendATCommand("AT+CREG?\r\n");
+    sendCommandAndWait("AT+CREG?\r\n");
+
     // Verificar o status do contexto PDP
-    sendATCommand("AT+CGACT?\r\n");
+    sendCommandAndWait("AT+CGACT?\r\n");
+
     // Verificar a qualidade do sinal
-    sendATCommand("AT+CSQ\r\n");
-    // Configurar o cntexto PDP para o canal MQTT
-    sendATCommand("AT+QMTCFG=\"pdpcid\",0,1\r\n");
+    sendCommandAndWait("AT+CSQ\r\n");
+
+    // Configurar o contexto PDP para o canal MQTT
+    sendCommandAndWait("AT+QMTCFG=\"pdpcid\",0,1\r\n");
 }
+
 
 void EnterSleepMode() {
 	SetNextAlarm();
