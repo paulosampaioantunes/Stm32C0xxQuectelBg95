@@ -340,7 +340,6 @@ void InitialConfigBg95() {
     sendATCommand("AT+CCID\r\n");
 	while (!responseReceived) {
 	    sendATCommand("AT+CCID\r\n");
-		HAL_Delay(100);
 		HAL_UART_Receive_IT(&huart2, responseBuffer,
 		RESPONSE_BUFFER_SIZE);
 	}
@@ -349,7 +348,6 @@ void InitialConfigBg95() {
     sendATCommand("AT+CIMI\r\n");
     while (!responseReceived) {
     		sendATCommand("AT+CIMI\r\n");
-    		HAL_Delay(100);
     		HAL_UART_Receive_IT(&huart2, responseBuffer,
     		RESPONSE_BUFFER_SIZE);
     	}
@@ -359,7 +357,6 @@ void InitialConfigBg95() {
     sendATCommand("AT+CFUN=0\r\n");
     while (!responseReceived) {
         	sendATCommand("AT+CFUN=0\r\n");
-       		HAL_Delay(100);
        		HAL_UART_Receive_IT(&huart2, responseBuffer,
        		RESPONSE_BUFFER_SIZE);
        	}
@@ -369,7 +366,6 @@ void InitialConfigBg95() {
     sendATCommand("AT+QCFG=\"nwscanmode\",0,1\r\n");
 	while (!responseReceived) {
 	    sendATCommand("AT+QCFG=\"nwscanmode\",0,1\r\n");
-		HAL_Delay(100);
 		HAL_UART_Receive_IT(&huart2, responseBuffer,
 		RESPONSE_BUFFER_SIZE);
 	}
@@ -379,7 +375,6 @@ void InitialConfigBg95() {
     sendATCommand("AT+QCFG=\"nwscanseq\",020103,1\r\n");
 	while (!responseReceived) {
 	    sendATCommand("AT+QCFG=\"nwscanseq\",020103,1\r\n");
-		HAL_Delay(100);
 		HAL_UART_Receive_IT(&huart2, responseBuffer,
 		RESPONSE_BUFFER_SIZE);
 	}
@@ -389,7 +384,6 @@ void InitialConfigBg95() {
     sendATCommand("AT+QCFG=\"band\",0,0\r\n");
 	while (!responseReceived) {
 	    sendATCommand("AT+QCFG=\"band\",0,0\r\n");
-		HAL_Delay(100);
 		HAL_UART_Receive_IT(&huart2, responseBuffer,
 		RESPONSE_BUFFER_SIZE);
 	}
@@ -400,7 +394,6 @@ void InitialConfigBg95() {
     sendATCommand("AT+COPS=0\r\n");
     while (!responseReceived) {
         	sendATCommand("AT+COPS=0\r\n");
-    		HAL_Delay(100);
     		HAL_UART_Receive_IT(&huart2, responseBuffer,
     		RESPONSE_BUFFER_SIZE);
     	}
@@ -410,7 +403,6 @@ void InitialConfigBg95() {
     sendATCommand("AT+CGDCONT=1,\"IP\",\"inlog.vivo.com.br\",\"datatem\",\"datatem\"\r\n");
 	while (!responseReceived) {
 	    sendATCommand("AT+CGDCONT=1,\"IP\",\"inlog.vivo.com.br\",\"datatem\",\"datatem\"\r\n");
-		HAL_Delay(100);
 		HAL_UART_Receive_IT(&huart2, responseBuffer,
 		RESPONSE_BUFFER_SIZE);
 	}
@@ -420,7 +412,6 @@ void InitialConfigBg95() {
     sendATCommand("AT+CFUN=1\r\n");
 	while (!responseReceived) {
 	    sendATCommand("AT+CFUN=1\r\n");
-		HAL_Delay(100);
 		HAL_UART_Receive_IT(&huart2, responseBuffer,
 		RESPONSE_BUFFER_SIZE);
 	}
@@ -430,7 +421,6 @@ void InitialConfigBg95() {
     sendATCommand("AT+CREG=1;+CGREG=1;+CEREG=1\r\n");
     while (!responseReceived) {
     		sendATCommand("AT+CREG=1;+CGREG=1;+CEREG=1\r\n");
-    		HAL_Delay(100);
     		HAL_UART_Receive_IT(&huart2, responseBuffer,
     		RESPONSE_BUFFER_SIZE);
     	}
@@ -440,7 +430,6 @@ void InitialConfigBg95() {
     sendATCommand("AT+COPS?\r\n");
 	while (!responseReceived) {
 	    sendATCommand("AT+COPS?\r\n");
-		HAL_Delay(100);
 		HAL_UART_Receive_IT(&huart2, responseBuffer,
 		RESPONSE_BUFFER_SIZE);
 	}
@@ -450,7 +439,6 @@ void InitialConfigBg95() {
     sendATCommand("AT+QCSQ\r\n");
     while (!responseReceived) {
         	sendATCommand("AT+QCSQ\r\n");
-    		HAL_Delay(100);
     		HAL_UART_Receive_IT(&huart2, responseBuffer,
     		RESPONSE_BUFFER_SIZE);
     	}
@@ -460,7 +448,6 @@ void InitialConfigBg95() {
     sendATCommand("AT+CREG?;+CEREG?;+CGREG?\r\n");
     while (!responseReceived) {
     	 	sendATCommand("AT+CREG?;+CEREG?;+CGREG?\r\n");
-       		HAL_Delay(100);
        		HAL_UART_Receive_IT(&huart2, responseBuffer,
        		RESPONSE_BUFFER_SIZE);
        	}
@@ -470,7 +457,6 @@ void InitialConfigBg95() {
     sendATCommand("AT+CGATT=1\r\n");
     while (!responseReceived) {
         		sendATCommand("AT+CGATT=1\r\n");
-           		HAL_Delay(100);
            		HAL_UART_Receive_IT(&huart2, responseBuffer,
            		RESPONSE_BUFFER_SIZE);
            	}
@@ -481,7 +467,6 @@ void InitialConfigBg95() {
 	while (!responseReceived) {
 		sendATCommand("AT+CGPADDR\r\n");
 
-		HAL_Delay(100);
 		HAL_UART_Receive_IT(&huart2, responseBuffer,
 		RESPONSE_BUFFER_SIZE);
 	}
@@ -500,7 +485,6 @@ void InitialConfigBg95() {
     		sendATCommand(command);
 
 
-    		HAL_Delay(100);
     		HAL_UART_Receive_IT(&huart2, responseBuffer,
     		RESPONSE_BUFFER_SIZE);
     	}
@@ -518,7 +502,6 @@ void ConfigPdpContext() {
 	while (!responseReceived) {
 	    sendATCommand(command);
 
-		HAL_Delay(100);
 		HAL_UART_Receive_IT(&huart2, responseBuffer,
 		RESPONSE_BUFFER_SIZE);
 	}
@@ -527,7 +510,6 @@ void ConfigPdpContext() {
     sendATCommand("AT+CGACT=1,1\r\n");
     while (!responseReceived) {
         	sendATCommand("AT+CGACT=1,1\r\n");
-    		HAL_Delay(100);
     		HAL_UART_Receive_IT(&huart2, responseBuffer,
     		RESPONSE_BUFFER_SIZE);
     	}
@@ -536,7 +518,6 @@ void ConfigPdpContext() {
     sendATCommand("AT+CGPADDR=1\r\n");
     while (!responseReceived) {
         		sendATCommand("AT+CGPADDR=1\r\n");
-        		HAL_Delay(100);
         		HAL_UART_Receive_IT(&huart2, responseBuffer,
         		RESPONSE_BUFFER_SIZE);
         	}
@@ -559,7 +540,6 @@ void ConfigMqttContext() {
     sendATCommand("AT+QMTCFG=\"version\",0,4\r\n");
 	while (!responseReceived) {
 	    sendATCommand("AT+QMTCFG=\"version\",0,4\r\n");
-		HAL_Delay(100);
 		HAL_UART_Receive_IT(&huart2, responseBuffer,
 		RESPONSE_BUFFER_SIZE);
 	}
@@ -568,7 +548,6 @@ void ConfigMqttContext() {
     sendATCommand("AT+QMTCFG=\"pdpcid\",0,1\r\n");
     while (!responseReceived) {
     		sendATCommand("AT+QMTCFG=\"pdpcid\",0,1\r\n");
-    		HAL_Delay(100);
     		HAL_UART_Receive_IT(&huart2, responseBuffer,
     		RESPONSE_BUFFER_SIZE);
     	}
@@ -577,7 +556,6 @@ void ConfigMqttContext() {
     sendATCommand("AT+QMTCFG=\"ssl\",0,1,0\r\n");
     while (!responseReceived) {
     		sendATCommand("AT+QMTCFG=\"ssl\",0,1,0\r\n");
-       		HAL_Delay(100);
        		HAL_UART_Receive_IT(&huart2, responseBuffer,
        		RESPONSE_BUFFER_SIZE);
        	}
@@ -586,7 +564,6 @@ void ConfigMqttContext() {
     sendATCommand("AT+QMTCFG=\"keepalive\",0,3600\r\n");
 	while (!responseReceived) {
 	    sendATCommand("AT+QMTCFG=\"keepalive\",0,3600\r\n");
-		HAL_Delay(100);
 		HAL_UART_Receive_IT(&huart2, responseBuffer,
 		RESPONSE_BUFFER_SIZE);
 	}
@@ -600,7 +577,6 @@ void ActivePdp() {
     sendATCommand("AT+CGDCONT?\r\n");
     while (!responseReceived) {
         	sendATCommand("AT+CGDCONT?\r\n");
-    		HAL_Delay(100);
     		HAL_UART_Receive_IT(&huart2, responseBuffer,
     		RESPONSE_BUFFER_SIZE);
     	}
@@ -609,7 +585,6 @@ void ActivePdp() {
     sendATCommand("AT+CGACT=1,1\r\n");
     while (!responseReceived) {
     		sendATCommand("AT+CGACT=1,1\r\n");
-       		HAL_Delay(100);
        		HAL_UART_Receive_IT(&huart2, responseBuffer,
        		RESPONSE_BUFFER_SIZE);
        	}
@@ -618,7 +593,6 @@ void ActivePdp() {
     sendATCommand("AT+CGPADDR=1\r\n");
     while (!responseReceived) {
     		sendATCommand("AT+CGPADDR=1\r\n");
-       		HAL_Delay(100);
        		HAL_UART_Receive_IT(&huart2, responseBuffer,
        		RESPONSE_BUFFER_SIZE);
        	}
@@ -629,7 +603,6 @@ void MqttConnectAndSubscribe() {
     sendATCommand("AT+QMTOPEN=0,1883\r\n");
 	while (!responseReceived) {
 		sendATCommand("AT+QMTOPEN=0,1883\r\n");
-		HAL_Delay(100);
 		HAL_UART_Receive_IT(&huart2, responseBuffer,
 		RESPONSE_BUFFER_SIZE);
 	}
@@ -638,7 +611,6 @@ void MqttConnectAndSubscribe() {
     sendATCommand("AT+QMTCONN=0,\"1\",\"pixtest\",\"pixtest\"\r\n");
     while (!responseReceived) {
     		sendATCommand("AT+QMTCONN=0,\"1\",\"pixtest\",\"pixtest\"\r\n");
-    		HAL_Delay(100);
     		HAL_UART_Receive_IT(&huart2, responseBuffer,
     		RESPONSE_BUFFER_SIZE);
     	}
@@ -647,7 +619,6 @@ void MqttConnectAndSubscribe() {
     sendATCommand("AT+QMTSUB=0,\"pixtest\",1\r\n");
     while (!responseReceived) {
     		sendATCommand("AT+QMTSUB=0,\"pixtest\",1\r\n");
-      		HAL_Delay(100);
       		HAL_UART_Receive_IT(&huart2, responseBuffer,
       		RESPONSE_BUFFER_SIZE);
       	}
@@ -660,7 +631,6 @@ void MqttConfigBeforeConnection() {
     sendATCommand("AT+CREG?\r\n");
 	while (!responseReceived) {
 	    sendATCommand("AT+CREG?\r\n");
-		HAL_Delay(100);
 		HAL_UART_Receive_IT(&huart2, responseBuffer,
 		RESPONSE_BUFFER_SIZE);
 	}
@@ -669,7 +639,6 @@ void MqttConfigBeforeConnection() {
     sendATCommand("AT+CGACT?\r\n");
     while (!responseReceived) {
     		sendATCommand("AT+CGACT?\r\n");
-    		HAL_Delay(100);
     		HAL_UART_Receive_IT(&huart2, responseBuffer,
     		RESPONSE_BUFFER_SIZE);
     	}
@@ -678,7 +647,6 @@ void MqttConfigBeforeConnection() {
     sendATCommand("AT+CSQ\r\n");
     while (!responseReceived) {
     		sendATCommand("AT+CSQ\r\n");
-       		HAL_Delay(100);
        		HAL_UART_Receive_IT(&huart2, responseBuffer,
        		RESPONSE_BUFFER_SIZE);
        	}
@@ -687,7 +655,6 @@ void MqttConfigBeforeConnection() {
     sendATCommand("AT+QMTCFG=\"pdpcid\",0,1\r\n");
 	while (!responseReceived) {
 		sendATCommand("AT+QMTCFG=\"pdpcid\",0,1\r\n");
-		HAL_Delay(100);
 		HAL_UART_Receive_IT(&huart2, responseBuffer,
 		RESPONSE_BUFFER_SIZE);
 	}
