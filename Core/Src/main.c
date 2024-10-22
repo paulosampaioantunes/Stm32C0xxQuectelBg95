@@ -69,7 +69,7 @@ void InitFlags();
 void SetNextAlarm();
 uint8_t responseBuffer[RESPONSE_BUFFER_SIZE];
 volatile uint8_t responseReceived = 0;
-
+void receiveResponseUntilMatch(char* command, char* responseBuffer, size_t bufferSize);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -124,15 +124,16 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  /*
+	  	  /*
 	        while (!responseReceived) {
-	        	sendATCommand();
+	        	sendCommand();
 	        	HAL_Delay(100);
+	        	HAL_UART_Receive(&huart2, responseBuffer, responseReceived, HAL_MAX_DELAY);
 	        	HAL_UART_Receive_IT(&huart2, responseBuffer,
 	        		    	RESPONSE_BUFFER_SIZE);
 	        }
 	        responseReceived = 0;
-	*/
+			*/
 
 		InitialConfigBg95();
 		ConfigPdpContext();
@@ -326,171 +327,99 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void sendATCommand(char* command) {
+    // Enviar o comando AT via UART
     HAL_UART_Transmit(&huart2, (uint8_t*)command, strlen(command), HAL_MAX_DELAY);
 }
-void receiveResponse(char* buffer, uint16_t bufferSize) {
-    HAL_UART_Receive(&huart2, (uint8_t*)buffer, bufferSize, HAL_MAX_DELAY);
+
+void receiveResponseUntilMatch(char* command, char* responseBuffer, size_t bufferSize) {
+    int match = 0;
+    while (!match) {
+        // Enviar comando AT
+        HAL_UART_Transmit(&huart2, (uint8_t*)command, strlen(command), HAL_MAX_DELAY);
+
+        // Receber resposta
+        HAL_UART_Receive(&huart2, (uint8_t*)responseBuffer, bufferSize, HAL_MAX_DELAY);
+
+        // Verificar se a resposta contém "+", "OK" ou "ok"
+        if (strstr(responseBuffer, "+") || strstr(responseBuffer, "OK") || strstr(responseBuffer, "ok")) {
+            match = 1;
+        }
+    }
 }
-
-
 void InitialConfigBg95() {
     char response[128];   // Buffer temporário para respostas AT
-    char ip[16];          // Buffer para armazenar o endereço IP
     char command[128];    // Buffer para os comandos AT
-    sendATCommand("AT+CCID\r\n");
-	while (!responseReceived) {
-	    sendATCommand("AT+CCID\r\n");
-		HAL_UART_Receive_IT(&huart2, responseBuffer,
-		RESPONSE_BUFFER_SIZE);
-	}
-	responseReceived = 0;
+
+    // Comando AT+CCID
+    strcpy(command, "AT+CCID\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
+
     // Comando AT+CIMI
-    sendATCommand("AT+CIMI\r\n");
-    while (!responseReceived) {
-    		sendATCommand("AT+CIMI\r\n");
-    		HAL_UART_Receive_IT(&huart2, responseBuffer,
-    		RESPONSE_BUFFER_SIZE);
-    	}
-    	responseReceived = 0;
+    strcpy(command, "AT+CIMI\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
     // Comando AT+CFUN=0
-    sendATCommand("AT+CFUN=0\r\n");
-    while (!responseReceived) {
-        	sendATCommand("AT+CFUN=0\r\n");
-       		HAL_UART_Receive_IT(&huart2, responseBuffer,
-       		RESPONSE_BUFFER_SIZE);
-       	}
-       	responseReceived = 0;
+    strcpy(command, "AT+CFUN=0\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
     // Comando AT+QCFG="nwscanmode",0,1
-    sendATCommand("AT+QCFG=\"nwscanmode\",0,1\r\n");
-	while (!responseReceived) {
-	    sendATCommand("AT+QCFG=\"nwscanmode\",0,1\r\n");
-		HAL_UART_Receive_IT(&huart2, responseBuffer,
-		RESPONSE_BUFFER_SIZE);
-	}
-	responseReceived = 0;
+    strcpy(command, "AT+QCFG=\"nwscanmode\",0,1\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
     // Comando AT+QCFG="nwscanseq",020103,1
-    sendATCommand("AT+QCFG=\"nwscanseq\",020103,1\r\n");
-	while (!responseReceived) {
-	    sendATCommand("AT+QCFG=\"nwscanseq\",020103,1\r\n");
-		HAL_UART_Receive_IT(&huart2, responseBuffer,
-		RESPONSE_BUFFER_SIZE);
-	}
-	responseReceived = 0;
+    strcpy(command, "AT+QCFG=\"nwscanseq\",020103,1\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
     // Comando AT+QCFG="band",0,0
-    sendATCommand("AT+QCFG=\"band\",0,0\r\n");
-	while (!responseReceived) {
-	    sendATCommand("AT+QCFG=\"band\",0,0\r\n");
-		HAL_UART_Receive_IT(&huart2, responseBuffer,
-		RESPONSE_BUFFER_SIZE);
-	}
-	responseReceived = 0;
-
+    strcpy(command, "AT+QCFG=\"band\",0,0\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
     // Comando AT+COPS=0
-    sendATCommand("AT+COPS=0\r\n");
-    while (!responseReceived) {
-        	sendATCommand("AT+COPS=0\r\n");
-    		HAL_UART_Receive_IT(&huart2, responseBuffer,
-    		RESPONSE_BUFFER_SIZE);
-    	}
-    	responseReceived = 0;
+    strcpy(command, "AT+COPS=0\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
     // Configurar o APN, username e password para a Vivo
-    sendATCommand("AT+CGDCONT=1,\"IP\",\"inlog.vivo.com.br\",\"datatem\",\"datatem\"\r\n");
-	while (!responseReceived) {
-	    sendATCommand("AT+CGDCONT=1,\"IP\",\"inlog.vivo.com.br\",\"datatem\",\"datatem\"\r\n");
-		HAL_UART_Receive_IT(&huart2, responseBuffer,
-		RESPONSE_BUFFER_SIZE);
-	}
-	responseReceived = 0;
+    strcpy(command, "AT+CGDCONT=1,\"IP\",\"inlog.vivo.com.br\",\"datatem\",\"datatem\"\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
     // Comando AT+CFUN=1
-    sendATCommand("AT+CFUN=1\r\n");
-	while (!responseReceived) {
-	    sendATCommand("AT+CFUN=1\r\n");
-		HAL_UART_Receive_IT(&huart2, responseBuffer,
-		RESPONSE_BUFFER_SIZE);
-	}
-	responseReceived = 0;
+    strcpy(command, "AT+CFUN=1\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
     // Comando AT+CREG=1;+CGREG=1;+CEREG=1
-    sendATCommand("AT+CREG=1;+CGREG=1;+CEREG=1\r\n");
-    while (!responseReceived) {
-    		sendATCommand("AT+CREG=1;+CGREG=1;+CEREG=1\r\n");
-    		HAL_UART_Receive_IT(&huart2, responseBuffer,
-    		RESPONSE_BUFFER_SIZE);
-    	}
-    	responseReceived = 0;
+    strcpy(command, "AT+CREG=1;+CGREG=1;+CEREG=1\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
     // Comando AT+COPS?
-    sendATCommand("AT+COPS?\r\n");
-	while (!responseReceived) {
-	    sendATCommand("AT+COPS?\r\n");
-		HAL_UART_Receive_IT(&huart2, responseBuffer,
-		RESPONSE_BUFFER_SIZE);
-	}
-	responseReceived = 0;
+    strcpy(command, "AT+COPS?\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
     // Comando AT+QCSQ
-    sendATCommand("AT+QCSQ\r\n");
-    while (!responseReceived) {
-        	sendATCommand("AT+QCSQ\r\n");
-    		HAL_UART_Receive_IT(&huart2, responseBuffer,
-    		RESPONSE_BUFFER_SIZE);
-    	}
-    	responseReceived = 0;
+    strcpy(command, "AT+QCSQ\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
     // Comando AT+CREG?;+CEREG?;+CGREG?
-    sendATCommand("AT+CREG?;+CEREG?;+CGREG?\r\n");
-    while (!responseReceived) {
-    	 	sendATCommand("AT+CREG?;+CEREG?;+CGREG?\r\n");
-       		HAL_UART_Receive_IT(&huart2, responseBuffer,
-       		RESPONSE_BUFFER_SIZE);
-       	}
-       	responseReceived = 0;
+    strcpy(command, "AT+CREG?;+CEREG?;+CGREG?\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
     // Comando AT+CGATT=1 (Conectar à rede)
-    sendATCommand("AT+CGATT=1\r\n");
-    while (!responseReceived) {
-        		sendATCommand("AT+CGATT=1\r\n");
-           		HAL_UART_Receive_IT(&huart2, responseBuffer,
-           		RESPONSE_BUFFER_SIZE);
-           	}
-           	responseReceived = 0;
+    strcpy(command, "AT+CGATT=1\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
     // Verificar o endereço IP alocado
-    sendATCommand("AT+CGPADDR\r\n");
-	while (!responseReceived) {
-		sendATCommand("AT+CGPADDR\r\n");
+    strcpy(command, "AT+CGPADDR\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
-		HAL_UART_Receive_IT(&huart2, responseBuffer,
-		RESPONSE_BUFFER_SIZE);
-	}
-	responseReceived = 0;
-    // Extrair o endereço IP da resposta
-    if (sscanf(responseBuffer, "+CGPADDR: 1,\"%15[^\"]", ip) == 1) {
-        printf("Endereço IP alocado: %s\n", ip); // Exibir o IP
+    // Comando AT+QPING para realizar ping com o IP obtido
+    char ip[16]; // Buffer para armazenar o IP extraído
+    if (sscanf(response, "+CGPADDR: 1,\"%15[^\"]", ip) == 1) {
+        printf("Endereço IP alocado: %s\n", ip);
+        snprintf(command, sizeof(command), "AT+QPING=1,\"%s\"\r\n", ip);
+        receiveResponseUntilMatch(command, response, sizeof(response));
     } else {
         printf("Falha ao obter o endereço IP.\n");
     }
-
-    // Realizar um teste de ping com o IP obtido
-    snprintf(command, sizeof(command), "AT+QPING=1,\"%s\"\r\n", ip);
-    sendATCommand(command);
-    while (!responseReceived) {
-    		sendATCommand(command);
-
-
-    		HAL_UART_Receive_IT(&huart2, responseBuffer,
-    		RESPONSE_BUFFER_SIZE);
-    	}
-    	responseReceived = 0;
 }
-
 
 void ConfigPdpContext() {
     char command[128];
@@ -529,138 +458,99 @@ void ConfigPdpContext() {
         snprintf(command, sizeof(command), "PDP context ativado com sucesso. APN: inlog.vivo.com.br, IP: %s\r\n", response);
        // sendATCommand(command); // Transmitir a mensagem de sucesso pela UART
     } else {
-        // Erro ao ativar o contexto PDP
-        //sendATCommand("Erro ao ativar o contexto PDP\r\n");
+        HAL_NVIC_SystemReset();
     }
 }
 
 
 void ConfigMqttContext() {
+    char response[128];   // Buffer temporário para respostas AT
+    char command[128];    // Buffer para os comandos AT
+
     // Configurar a versão MQTT como 3.1.1
-    sendATCommand("AT+QMTCFG=\"version\",0,4\r\n");
-	while (!responseReceived) {
-	    sendATCommand("AT+QMTCFG=\"version\",0,4\r\n");
-		HAL_UART_Receive_IT(&huart2, responseBuffer,
-		RESPONSE_BUFFER_SIZE);
-	}
-	responseReceived = 0;
+    strcpy(command, "AT+QMTCFG=\"version\",0,4\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
+
     // Associar o contexto PDP ao cliente MQTT
-    sendATCommand("AT+QMTCFG=\"pdpcid\",0,1\r\n");
-    while (!responseReceived) {
-    		sendATCommand("AT+QMTCFG=\"pdpcid\",0,1\r\n");
-    		HAL_UART_Receive_IT(&huart2, responseBuffer,
-    		RESPONSE_BUFFER_SIZE);
-    	}
-    	responseReceived = 0;
+    strcpy(command, "AT+QMTCFG=\"pdpcid\",0,1\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
+
     // Habilitar SSL para o cliente MQTT
-    sendATCommand("AT+QMTCFG=\"ssl\",0,1,0\r\n");
-    while (!responseReceived) {
-    		sendATCommand("AT+QMTCFG=\"ssl\",0,1,0\r\n");
-       		HAL_UART_Receive_IT(&huart2, responseBuffer,
-       		RESPONSE_BUFFER_SIZE);
-       	}
-       	responseReceived = 0;
+    strcpy(command, "AT+QMTCFG=\"ssl\",0,1,0\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
+
     // Configurar keepalive para 3600 segundos
-    sendATCommand("AT+QMTCFG=\"keepalive\",0,3600\r\n");
-	while (!responseReceived) {
-	    sendATCommand("AT+QMTCFG=\"keepalive\",0,3600\r\n");
-		HAL_UART_Receive_IT(&huart2, responseBuffer,
-		RESPONSE_BUFFER_SIZE);
-	}
-	responseReceived = 0;
-    // Configurar o "Will Message" do MQTT
-   // sendATCommand("AT+QMTCFG=\"will\",0,1,0,1,\"/test/will\",\"Client disconnected unexpectedly\"\r\n");
+    strcpy(command, "AT+QMTCFG=\"keepalive\",0,3600\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
+
+
 }
 
 void ActivePdp() {
+    char response[128];   // Buffer temporário para respostas AT
+    char command[128];    // Buffer para os comandos AT
+
     // Verificar se o APN está configurado corretamente
-    sendATCommand("AT+CGDCONT?\r\n");
-    while (!responseReceived) {
-        	sendATCommand("AT+CGDCONT?\r\n");
-    		HAL_UART_Receive_IT(&huart2, responseBuffer,
-    		RESPONSE_BUFFER_SIZE);
-    	}
-    	responseReceived = 0;
+    strcpy(command, "AT+CGDCONT?\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
+
     // Ativar o contexto PDP
-    sendATCommand("AT+CGACT=1,1\r\n");
-    while (!responseReceived) {
-    		sendATCommand("AT+CGACT=1,1\r\n");
-       		HAL_UART_Receive_IT(&huart2, responseBuffer,
-       		RESPONSE_BUFFER_SIZE);
-       	}
-       	responseReceived = 0;
+    strcpy(command, "AT+CGACT=1,1\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
+
     // Verificar se um endereço IP foi atribuído
-    sendATCommand("AT+CGPADDR=1\r\n");
-    while (!responseReceived) {
-    		sendATCommand("AT+CGPADDR=1\r\n");
-       		HAL_UART_Receive_IT(&huart2, responseBuffer,
-       		RESPONSE_BUFFER_SIZE);
-       	}
-       	responseReceived = 0;
+    strcpy(command, "AT+CGPADDR=1\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 }
 void MqttConnectAndSubscribe() {
+    char response[128];   // Buffer temporário para respostas AT
+    char command[128];    // Buffer para os comandos AT
+
     // Conectar ao broker MQTT
-    sendATCommand("AT+QMTOPEN=0,1883\r\n");
-	while (!responseReceived) {
-		sendATCommand("AT+QMTOPEN=0,1883\r\n");
-		HAL_UART_Receive_IT(&huart2, responseBuffer,
-		RESPONSE_BUFFER_SIZE);
-	}
-	responseReceived = 0;
+    strcpy(command, "AT+QMTOPEN=0,1883\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
+
     // Conectar ao broker MQTT com ID e credenciais
-    sendATCommand("AT+QMTCONN=0,\"1\",\"pixtest\",\"pixtest\"\r\n");
-    while (!responseReceived) {
-    		sendATCommand("AT+QMTCONN=0,\"1\",\"pixtest\",\"pixtest\"\r\n");
-    		HAL_UART_Receive_IT(&huart2, responseBuffer,
-    		RESPONSE_BUFFER_SIZE);
-    	}
-    	responseReceived = 0;
+    strcpy(command, "AT+QMTCONN=0,\"1\",\"pixtest\",\"pixtest\"\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
+
     // Inscrever-se no tópico desejado
-    sendATCommand("AT+QMTSUB=0,\"pixtest\",1\r\n");
-    while (!responseReceived) {
-    		sendATCommand("AT+QMTSUB=0,\"pixtest\",1\r\n");
-      		HAL_UART_Receive_IT(&huart2, responseBuffer,
-      		RESPONSE_BUFFER_SIZE);
-      	}
-      	responseReceived = 0;
+    strcpy(command, "AT+QMTSUB=0,\"pixtest\",1\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 }
 
 void MqttConfigBeforeConnection() {
+    char response[128];   // Buffer temporário para respostas AT
+    char command[128];    // Buffer para os comandos AT
 
     // Verificar se o dispositivo está registrado na rede
-    sendATCommand("AT+CREG?\r\n");
-	while (!responseReceived) {
-	    sendATCommand("AT+CREG?\r\n");
-		HAL_UART_Receive_IT(&huart2, responseBuffer,
-		RESPONSE_BUFFER_SIZE);
-	}
-	responseReceived = 0;
-    // Verificar o status do contexto PDP
-    sendATCommand("AT+CGACT?\r\n");
-    while (!responseReceived) {
-    		sendATCommand("AT+CGACT?\r\n");
-    		HAL_UART_Receive_IT(&huart2, responseBuffer,
-    		RESPONSE_BUFFER_SIZE);
-    	}
-    	responseReceived = 0;
-    // Verificar a qualidade do sinal
-    sendATCommand("AT+CSQ\r\n");
-    while (!responseReceived) {
-    		sendATCommand("AT+CSQ\r\n");
-       		HAL_UART_Receive_IT(&huart2, responseBuffer,
-       		RESPONSE_BUFFER_SIZE);
-       	}
-       	responseReceived = 0;
-    // Configurar o cntexto PDP para o canal MQTT
-    sendATCommand("AT+QMTCFG=\"pdpcid\",0,1\r\n");
-	while (!responseReceived) {
-		sendATCommand("AT+QMTCFG=\"pdpcid\",0,1\r\n");
-		HAL_UART_Receive_IT(&huart2, responseBuffer,
-		RESPONSE_BUFFER_SIZE);
-	}
-	responseReceived = 0;
-}
+    strcpy(command, "AT+CREG?\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
 
+    // Verificar o status do contexto PDP
+    strcpy(command, "AT+CGACT?\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
+
+    // Verificar a qualidade do sinal
+    strcpy(command, "AT+CSQ\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
+
+    // Configurar o contexto PDP para o canal MQTT
+    strcpy(command, "AT+QMTCFG=\"pdpcid\",0,1\r\n");
+    receiveResponseUntilMatch(command, response, sizeof(response));
+}
+void sendCommand() {
+	// Limpar o buffer de resposta
+	memset(responseBuffer, 0, sizeof(responseBuffer));
+
+
+
+	// Comando AT a ser enviado
+	uint8_t command[] = { 'A', 'T', '\r', '\n' };
+
+	// Enviar o comando AT
+	HAL_UART_Transmit(&huart2, command, sizeof(command), HAL_MAX_DELAY);
+}
 
 void EnterSleepMode() {
 	SetNextAlarm();
