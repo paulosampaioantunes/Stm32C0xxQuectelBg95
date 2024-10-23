@@ -353,7 +353,7 @@ void receiveResponseUntilMatch(const char *searchPattern) {
         printf("Response Buffer Recebido: %s\n", responseBuffer);
 
         // Procurar por "OK" no buffer
-        if (strstr(responseBuffer, "OK") != NULL) {
+        if (strstr(responseBuffer, "OK") != NULL || strstr(responseBuffer, "+") != NULL || strstr(responseBuffer, "\n") != NULL) {
             responseValid = true;
             printf("Resposta válida recebida: %s\n", responseBuffer);
             break;  // Saia do loop ao encontrar uma resposta válida

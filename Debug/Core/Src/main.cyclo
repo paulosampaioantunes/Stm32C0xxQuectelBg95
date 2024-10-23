@@ -4,7 +4,7 @@
 ../Core/Src/main.c:279:13:MX_USART2_UART_Init	2
 ../Core/Src/main.c:315:13:MX_GPIO_Init	1
 ../Core/Src/main.c:329:6:sendATCommand	1
-../Core/Src/main.c:334:6:receiveResponseUntilMatch	5
+../Core/Src/main.c:334:6:receiveResponseUntilMatch	7
 ../Core/Src/main.c:421:6:InitialConfigBg95	2
 ../Core/Src/main.c:481:6:ConfigPdpContext	2
 ../Core/Src/main.c:506:6:ConfigMqttContext	1
