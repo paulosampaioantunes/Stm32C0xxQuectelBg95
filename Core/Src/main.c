@@ -18,10 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "string.h"
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -69,7 +69,7 @@ void InitFlags();
 void SetNextAlarm();
 uint8_t responseBuffer[RESPONSE_BUFFER_SIZE];
 volatile uint8_t responseReceived = 0;
-void receiveResponseUntilMatch(char* command, char* responseBuffer, size_t bufferSize);
+void receiveResponseUntilMatch(const char *searchPattern);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -331,14 +331,85 @@ void sendATCommand(char* command) {
     HAL_UART_Transmit(&huart2, (uint8_t*)command, strlen(command), HAL_MAX_DELAY);
 }
 
-void receiveResponseUntilMatch(char* command, char* responseBuffer, size_t bufferSize) {
-    int match = 0;
-    while (!match) {
-        // Enviar comando AT
-        HAL_UART_Transmit(&huart2, (uint8_t*)command, strlen(command), HAL_MAX_DELAY);
+void receiveResponseUntilMatch(const char *searchPattern) {
+    bool responseValid = false;
+    char responseBuffer[128];  // Buffer para a resposta do UART
+    int contTryRequestSignal = 0;
 
-        // Receber resposta
-        HAL_UART_Receive(&huart2, (uint8_t*)responseBuffer, bufferSize, HAL_MAX_DELAY);
+    // Limpar o buffer de resposta
+    memset(responseBuffer, 0, sizeof(responseBuffer));
+
+    while (!responseValid && contTryRequestSignal <= 60) {
+        // Limpar o buffer de resposta a cada tentativa
+        memset(responseBuffer, 0, sizeof(responseBuffer));
+
+        // Enviar o comando AT ou outro comando conforme necessário
+        HAL_UART_Transmit(&huart2, (uint8_t*)searchPattern, strlen(searchPattern), HAL_MAX_DELAY);
+
+        // Receber a resposta
+        HAL_UART_Receive(&huart2, (uint8_t*)responseBuffer, sizeof(responseBuffer), 1000);
+
+        // Depuração: Mostrar o buffer recebido para verificar seu conteúdo
+        printf("Response Buffer Recebido: %s\n", responseBuffer);
+
+        // Procurar por "OK" no buffer
+        if (strstr(responseBuffer, "OK") != NULL) {
+            responseValid = true;
+            printf("Resposta válida recebida: %s\n", responseBuffer);
+            break;  // Saia do loop ao encontrar uma resposta válida
+        }
+
+        // Se não encontrar a resposta válida
+        contTryRequestSignal++;
+        HAL_Delay(1000);  // Esperar 1 segundo antes de tentar novamente
+        printf("Tentativa %d: Sem resposta válida.\n", contTryRequestSignal);
+    }
+
+    // Após 10 tentativas sem sucesso, continuar
+    if (!responseValid) {
+        printf("Tentativas esgotadas, continuando sem resposta válida.\n");
+    }
+
+
+}
+
+
+
+/*
+void receiveResponseUntilMatch(char command[128]) {
+    char responseBuffer[128]; // Buffer temporário para respostas AT
+    char commandBuffer[128];   // Buffer para armazenar o comando caractere a caractere
+    int match = 0;
+    int i;
+    int responseLength = 0;
+
+    // Limpar o buffer commandBuffer
+    memset(commandBuffer, 0, sizeof(commandBuffer)); // Limpar o buffer
+    memset(responseBuffer, 0, sizeof(responseBuffer)); // Limpar o buffer
+
+    // Copiar o comando caractere a caractere
+    for (i = 0; command[i] != '\0' && i < sizeof(commandBuffer) - 1; i++) {
+        commandBuffer[i] = command[i];
+    }
+    commandBuffer[i] = '\0'; // Adicionar o terminador de string
+
+    while (!match) {
+        memset(responseBuffer, 0, sizeof(responseBuffer)); // Limpar o buffer
+        responseLength = 0; // Redefinir o comprimento da resposta
+
+        // Enviar comando AT
+        HAL_UART_Transmit(&huart2, (uint8_t*)commandBuffer, strlen(commandBuffer), HAL_MAX_DELAY);
+
+        // Receber resposta caractere a caractere
+        while (responseLength < sizeof(responseBuffer) - 1) {
+            HAL_UART_Transmit(&huart2, (uint8_t*)commandBuffer, strlen(commandBuffer), HAL_MAX_DELAY);
+            HAL_UART_Receive(&huart2, responseBuffer, 128, HAL_MAX_DELAY); // Receber 1 caractere
+            if (responseBuffer == '\n' || responseBuffer == '\r') { // Verificar se é fim da linha
+                break; // Sair do loop se encontrar fim de linha
+            }
+
+        }
+        responseBuffer[responseLength] = '\0'; // Adicionar terminador de string
 
         // Verificar se a resposta contém "+", "OK" ou "ok"
         if (strstr(responseBuffer, "+") || strstr(responseBuffer, "OK") || strstr(responseBuffer, "ok")) {
@@ -346,199 +417,150 @@ void receiveResponseUntilMatch(char* command, char* responseBuffer, size_t buffe
         }
     }
 }
+*/
 void InitialConfigBg95() {
-    char response[128];   // Buffer temporário para respostas AT
+     // Buffer temporário para respostas AT
     char command[128];    // Buffer para os comandos AT
 
     // Comando AT+CCID
     strcpy(command, "AT+CCID\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
+    receiveResponseUntilMatch(command);
 
     // Comando AT+CIMI
     strcpy(command, "AT+CIMI\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Comando AT+CFUN=0
     strcpy(command, "AT+CFUN=0\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Comando AT+QCFG="nwscanmode",0,1
     strcpy(command, "AT+QCFG=\"nwscanmode\",0,1\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Comando AT+QCFG="nwscanseq",020103,1
     strcpy(command, "AT+QCFG=\"nwscanseq\",020103,1\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Comando AT+QCFG="band",0,0
     strcpy(command, "AT+QCFG=\"band\",0,0\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Comando AT+COPS=0
     strcpy(command, "AT+COPS=0\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Configurar o APN, username e password para a Vivo
     strcpy(command, "AT+CGDCONT=1,\"IP\",\"inlog.vivo.com.br\",\"datatem\",\"datatem\"\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Comando AT+CFUN=1
     strcpy(command, "AT+CFUN=1\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Comando AT+CREG=1;+CGREG=1;+CEREG=1
     strcpy(command, "AT+CREG=1;+CGREG=1;+CEREG=1\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Comando AT+COPS?
     strcpy(command, "AT+COPS?\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Comando AT+QCSQ
     strcpy(command, "AT+QCSQ\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Comando AT+CREG?;+CEREG?;+CGREG?
     strcpy(command, "AT+CREG?;+CEREG?;+CGREG?\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Comando AT+CGATT=1 (Conectar à rede)
     strcpy(command, "AT+CGATT=1\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Verificar o endereço IP alocado
     strcpy(command, "AT+CGPADDR\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Comando AT+QPING para realizar ping com o IP obtido
     char ip[16]; // Buffer para armazenar o IP extraído
-    if (sscanf(response, "+CGPADDR: 1,\"%15[^\"]", ip) == 1) {
+    if (sscanf(responseBuffer, "+CGPADDR: 1,\"%15[^\"]", ip) == 1) {
         printf("Endereço IP alocado: %s\n", ip);
         snprintf(command, sizeof(command), "AT+QPING=1,\"%s\"\r\n", ip);
-        receiveResponseUntilMatch(command, response, sizeof(response));
-    } else {
+        receiveResponseUntilMatch(command);    } else {
         printf("Falha ao obter o endereço IP.\n");
     }
 }
 
 void ConfigPdpContext() {
     char command[128];
-    char response[256];
 
     // Configurar APN com o contexto CID 1, com login e senha
     snprintf(command, sizeof(command), "AT+CGDCONT=1,\"IP\",\"inlog.vivo.com.br\",\"\",0,0\r\n");
-    sendATCommand(command);
-	while (!responseReceived) {
-	    sendATCommand(command);
+    receiveResponseUntilMatch(command);  // Enviar comando e esperar resposta
 
-		HAL_UART_Receive_IT(&huart2, responseBuffer,
-		RESPONSE_BUFFER_SIZE);
-	}
-	responseReceived = 0;
     // Ativar o contexto PDP
-    sendATCommand("AT+CGACT=1,1\r\n");
-    while (!responseReceived) {
-        	sendATCommand("AT+CGACT=1,1\r\n");
-    		HAL_UART_Receive_IT(&huart2, responseBuffer,
-    		RESPONSE_BUFFER_SIZE);
-    	}
-    	responseReceived = 0;
+    strcpy(command, "AT+CGACT=1,1\r\n");
+    receiveResponseUntilMatch(command);  // Enviar comando e esperar resposta
+
     // Verificar se o contexto PDP está ativo
-    sendATCommand("AT+CGPADDR=1\r\n");
-    while (!responseReceived) {
-        		sendATCommand("AT+CGPADDR=1\r\n");
-        		HAL_UART_Receive_IT(&huart2, responseBuffer,
-        		RESPONSE_BUFFER_SIZE);
-        	}
-        	responseReceived = 0;
+    strcpy(command, "AT+CGPADDR=1\r\n");
+    receiveResponseUntilMatch(command);  // Enviar comando e esperar resposta
+
     // Receber a resposta e verificar se contém o IP
-  //  HAL_UART_Receive(&huart2, (uint8_t*)response, sizeof(response), HAL_MAX_DELAY);
     if (strstr(responseBuffer, "0.0.0.0") == NULL) {
         // Contexto PDP ativado com sucesso, IP foi alocado corretamente
-        snprintf(command, sizeof(command), "PDP context ativado com sucesso. APN: inlog.vivo.com.br, IP: %s\r\n", response);
-       // sendATCommand(command); // Transmitir a mensagem de sucesso pela UART
+        snprintf(command, sizeof(command), "PDP context ativado com sucesso. APN: inlog.vivo.com.br, IP: %s\r\n", responseBuffer);
+        // sendATCommand(command); // Transmitir a mensagem de sucesso pela UART
     } else {
         HAL_NVIC_SystemReset();
     }
 }
 
-
 void ConfigMqttContext() {
-    char response[128];   // Buffer temporário para respostas AT
     char command[128];    // Buffer para os comandos AT
 
     // Configurar a versão MQTT como 3.1.1
     strcpy(command, "AT+QMTCFG=\"version\",0,4\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Associar o contexto PDP ao cliente MQTT
     strcpy(command, "AT+QMTCFG=\"pdpcid\",0,1\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Habilitar SSL para o cliente MQTT
     strcpy(command, "AT+QMTCFG=\"ssl\",0,1,0\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Configurar keepalive para 3600 segundos
     strcpy(command, "AT+QMTCFG=\"keepalive\",0,3600\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
 
 }
 
 void ActivePdp() {
-    char response[128];   // Buffer temporário para respostas AT
     char command[128];    // Buffer para os comandos AT
 
     // Verificar se o APN está configurado corretamente
     strcpy(command, "AT+CGDCONT?\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Ativar o contexto PDP
     strcpy(command, "AT+CGACT=1,1\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Verificar se um endereço IP foi atribuído
     strcpy(command, "AT+CGPADDR=1\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-}
+    receiveResponseUntilMatch(command);}
 void MqttConnectAndSubscribe() {
-    char response[128];   // Buffer temporário para respostas AT
     char command[128];    // Buffer para os comandos AT
 
     // Conectar ao broker MQTT
     strcpy(command, "AT+QMTOPEN=0,1883\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Conectar ao broker MQTT com ID e credenciais
     strcpy(command, "AT+QMTCONN=0,\"1\",\"pixtest\",\"pixtest\"\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Inscrever-se no tópico desejado
     strcpy(command, "AT+QMTSUB=0,\"pixtest\",1\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-}
+    receiveResponseUntilMatch(command);}
 
 void MqttConfigBeforeConnection() {
-    char response[128];   // Buffer temporário para respostas AT
     char command[128];    // Buffer para os comandos AT
 
     // Verificar se o dispositivo está registrado na rede
     strcpy(command, "AT+CREG?\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Verificar o status do contexto PDP
     strcpy(command, "AT+CGACT?\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Verificar a qualidade do sinal
     strcpy(command, "AT+CSQ\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-
+    receiveResponseUntilMatch(command);
     // Configurar o contexto PDP para o canal MQTT
     strcpy(command, "AT+QMTCFG=\"pdpcid\",0,1\r\n");
-    receiveResponseUntilMatch(command, response, sizeof(response));
-}
+    receiveResponseUntilMatch(command);}
 void sendCommand() {
 	// Limpar o buffer de resposta
 	memset(responseBuffer, 0, sizeof(responseBuffer));
