@@ -533,7 +533,7 @@ void ReceiveData(){
 	        memset(responseBuffer, 0, sizeof(responseBuffer));
 
 	        // Receber a resposta
-	        HAL_UART_Receive(&huart2, (uint8_t*)responseBuffer, sizeof(responseBuffer), 500);
+	        HAL_UART_Receive(&huart2, (uint8_t*)responseBuffer, sizeof(responseBuffer), 1000); // waiting 1000s for receive data
 
 	        // Depuração: Mostrar o buffer recebido para verificar seu conteúdo
 	        printf("Response Buffer Recebido: %s\n", responseBuffer);
@@ -554,6 +554,7 @@ void ReceiveData(){
 	    // Após 10 tentativas sem sucesso, continuar
 	    if (!responseValid) {
 	        printf("Tentativas esgotadas, continuando sem resposta válida.\n");
+	        HAL_NVIC_SystemReset(); // reset for config again the module
 	    }
 }
 

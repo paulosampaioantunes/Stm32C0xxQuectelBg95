@@ -13,7 +13,7 @@
 ../Core/Src/main.c:496:6:MqttConfigBeforeConnection	144	static
 ../Core/Src/main.c:511:6:sendCommand	16	static
 ../Core/Src/main.c:523:6:ReceiveData	152	static
-../Core/Src/main.c:560:6:EnterSleepMode	8	static
-../Core/Src/main.c:567:6:SetNextAlarm	88	static
-../Core/Src/main.c:608:6:InitFlags	8	static
-../Core/Src/main.c:627:6:Error_Handler	8	static,ignoring_inline_asm
+../Core/Src/main.c:561:6:EnterSleepMode	8	static
+../Core/Src/main.c:568:6:SetNextAlarm	88	static
+../Core/Src/main.c:609:6:InitFlags	8	static
+../Core/Src/main.c:628:6:Error_Handler	8	static,ignoring_inline_asm

@@ -13,7 +13,7 @@
 ../Core/Src/main.c:496:6:MqttConfigBeforeConnection	1
 ../Core/Src/main.c:511:6:sendCommand	1
 ../Core/Src/main.c:523:6:ReceiveData	6
-../Core/Src/main.c:560:6:EnterSleepMode	1
-../Core/Src/main.c:567:6:SetNextAlarm	2
-../Core/Src/main.c:608:6:InitFlags	2
-../Core/Src/main.c:627:6:Error_Handler	1
+../Core/Src/main.c:561:6:EnterSleepMode	1
+../Core/Src/main.c:568:6:SetNextAlarm	2
+../Core/Src/main.c:609:6:InitFlags	2
+../Core/Src/main.c:628:6:Error_Handler	1
