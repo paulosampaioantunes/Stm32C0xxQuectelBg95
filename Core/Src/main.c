@@ -70,6 +70,7 @@ void SetNextAlarm();
 uint8_t responseBuffer[RESPONSE_BUFFER_SIZE];
 volatile uint8_t responseReceived = 0;
 void receiveResponseUntilMatch(const char *searchPattern);
+void ReceiveData();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -124,25 +125,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  	  /*
-	        while (!responseReceived) {
-	        	sendCommand();
-	        	HAL_Delay(100);
-	        	HAL_UART_Receive(&huart2, responseBuffer, responseReceived, HAL_MAX_DELAY);
-	        	HAL_UART_Receive_IT(&huart2, responseBuffer,
-	        		    	RESPONSE_BUFFER_SIZE);
-	        }
-	        responseReceived = 0;
-			*/
-
 		InitialConfigBg95();
 		ConfigPdpContext();
 		ActivePdp();
 		ConfigMqttContext();
 		MqttConfigBeforeConnection();
 		MqttConnectAndSubscribe();
-		HAL_Delay(10000);
-
 		EnterSleepMode();
 
   }
@@ -339,7 +327,7 @@ void receiveResponseUntilMatch(const char *searchPattern) {
     // Limpar o buffer de resposta
     memset(responseBuffer, 0, sizeof(responseBuffer));
 
-    while (!responseValid && contTryRequestSignal <= 60) {
+    while (!responseValid && contTryRequestSignal <= 10) {
         // Limpar o buffer de resposta a cada tentativa
         memset(responseBuffer, 0, sizeof(responseBuffer));
 
@@ -347,13 +335,13 @@ void receiveResponseUntilMatch(const char *searchPattern) {
         HAL_UART_Transmit(&huart2, (uint8_t*)searchPattern, strlen(searchPattern), HAL_MAX_DELAY);
 
         // Receber a resposta
-        HAL_UART_Receive(&huart2, (uint8_t*)responseBuffer, sizeof(responseBuffer), 1000);
+        HAL_UART_Receive(&huart2, (uint8_t*)responseBuffer, sizeof(responseBuffer), 500);
 
         // Depuração: Mostrar o buffer recebido para verificar seu conteúdo
         printf("Response Buffer Recebido: %s\n", responseBuffer);
 
-        // Procurar por "OK" no buffer
-        if (strstr(responseBuffer, "OK") != NULL || strstr(responseBuffer, "+") != NULL || strstr(responseBuffer, "\n") != NULL) {
+        //|| strstr(responseBuffer, "\n") != NULL
+        if (strstr(responseBuffer, "OK") != NULL || strstr(responseBuffer, "+") != NULL ) {
             responseValid = true;
             printf("Resposta válida recebida: %s\n", responseBuffer);
             break;  // Saia do loop ao encontrar uma resposta válida
@@ -373,51 +361,6 @@ void receiveResponseUntilMatch(const char *searchPattern) {
 
 }
 
-
-
-/*
-void receiveResponseUntilMatch(char command[128]) {
-    char responseBuffer[128]; // Buffer temporário para respostas AT
-    char commandBuffer[128];   // Buffer para armazenar o comando caractere a caractere
-    int match = 0;
-    int i;
-    int responseLength = 0;
-
-    // Limpar o buffer commandBuffer
-    memset(commandBuffer, 0, sizeof(commandBuffer)); // Limpar o buffer
-    memset(responseBuffer, 0, sizeof(responseBuffer)); // Limpar o buffer
-
-    // Copiar o comando caractere a caractere
-    for (i = 0; command[i] != '\0' && i < sizeof(commandBuffer) - 1; i++) {
-        commandBuffer[i] = command[i];
-    }
-    commandBuffer[i] = '\0'; // Adicionar o terminador de string
-
-    while (!match) {
-        memset(responseBuffer, 0, sizeof(responseBuffer)); // Limpar o buffer
-        responseLength = 0; // Redefinir o comprimento da resposta
-
-        // Enviar comando AT
-        HAL_UART_Transmit(&huart2, (uint8_t*)commandBuffer, strlen(commandBuffer), HAL_MAX_DELAY);
-
-        // Receber resposta caractere a caractere
-        while (responseLength < sizeof(responseBuffer) - 1) {
-            HAL_UART_Transmit(&huart2, (uint8_t*)commandBuffer, strlen(commandBuffer), HAL_MAX_DELAY);
-            HAL_UART_Receive(&huart2, responseBuffer, 128, HAL_MAX_DELAY); // Receber 1 caractere
-            if (responseBuffer == '\n' || responseBuffer == '\r') { // Verificar se é fim da linha
-                break; // Sair do loop se encontrar fim de linha
-            }
-
-        }
-        responseBuffer[responseLength] = '\0'; // Adicionar terminador de string
-
-        // Verificar se a resposta contém "+", "OK" ou "ok"
-        if (strstr(responseBuffer, "+") || strstr(responseBuffer, "OK") || strstr(responseBuffer, "ok")) {
-            match = 1;
-        }
-    }
-}
-*/
 void InitialConfigBg95() {
      // Buffer temporário para respostas AT
     char command[128];    // Buffer para os comandos AT
@@ -572,6 +515,42 @@ void sendCommand() {
 
 	// Enviar o comando AT
 	HAL_UART_Transmit(&huart2, command, sizeof(command), HAL_MAX_DELAY);
+}
+void ReceiveData(){
+	  bool responseValid = false;
+	  char responseBuffer[128];  // Buffer para a resposta do UART
+	   int contTryRequestSignal = 0;
+
+	    // Limpar o buffer de resposta
+	    memset(responseBuffer, 0, sizeof(responseBuffer));
+
+	    while (!responseValid && contTryRequestSignal <= 10) {
+	        // Limpar o buffer de resposta a cada tentativa
+	        memset(responseBuffer, 0, sizeof(responseBuffer));
+
+	        // Receber a resposta
+	        HAL_UART_Receive(&huart2, (uint8_t*)responseBuffer, sizeof(responseBuffer), 500);
+
+	        // Depuração: Mostrar o buffer recebido para verificar seu conteúdo
+	        printf("Response Buffer Recebido: %s\n", responseBuffer);
+
+	        //|| strstr(responseBuffer, "\n") != NULL
+	        if (strstr(responseBuffer, "OK") != NULL || strstr(responseBuffer, "+") != NULL ) {  // modificar para receber a mensagem esperada
+	            responseValid = true;
+	            printf("Resposta válida recebida: %s\n", responseBuffer);
+	            break;  // Saia do loop ao encontrar uma resposta válida
+	        }
+
+	        // Se não encontrar a resposta válida
+	        contTryRequestSignal++;
+	        HAL_Delay(1000);  // Esperar 1 segundo antes de tentar novamente
+	        printf("Tentativa %d: Sem resposta válida.\n", contTryRequestSignal);
+	    }
+
+	    // Após 10 tentativas sem sucesso, continuar
+	    if (!responseValid) {
+	        printf("Tentativas esgotadas, continuando sem resposta válida.\n");
+	    }
 }
 
 void EnterSleepMode() {
