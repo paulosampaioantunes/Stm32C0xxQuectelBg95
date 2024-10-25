@@ -475,7 +475,8 @@ void ActivePdp() {
     receiveResponseUntilMatch(command);
     // Verificar se um endereço IP foi atribuído
     strcpy(command, "AT+CGPADDR=1\r\n");
-    receiveResponseUntilMatch(command);}
+    receiveResponseUntilMatch(command);
+}
 void MqttConnectAndSubscribe() {
     char command[128];    // Buffer para os comandos AT
 
@@ -487,7 +488,10 @@ void MqttConnectAndSubscribe() {
     receiveResponseUntilMatch(command);
     // Inscrever-se no tópico desejado
     strcpy(command, "AT+QMTSUB=0,\"pixtest\",1\r\n");
-    receiveResponseUntilMatch(command);}
+    receiveResponseUntilMatch(command);
+    ReceiveData();
+
+}
 
 void MqttConfigBeforeConnection() {
     char command[128];    // Buffer para os comandos AT
